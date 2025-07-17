@@ -1,0 +1,33 @@
+{
+    "doip": {
+        "vehicle_id": "1234567890ABCDEF",
+        "logical_address": 4096,
+        "functional_address": 4097,
+        "port": 13400,
+        "supported_services": [16, 17, 34, 39]
+    },
+    "docan": {
+        "rx_id": 291,
+        "tx_id": 1110,
+        "bitrate": 500000,
+        "supported_services": [16, 17, 34, 39]
+    },
+    "uds_services": {
+        "diagnostic_session_control": {
+            "service_id": 16,
+            "sessions": [1, 2, 3]
+        },
+        "ecu_reset": {
+            "service_id": 17,
+            "reset_types": [1, 2]
+        },
+        "read_data_by_identifier": {
+            "service_id": 34,
+            "supported_dids": [61472, 61473, 61474]
+        },
+        "security_access": {
+            "service_id": 39,
+            "security_levels": [1, 3, 5]
+        }
+    }
+}
