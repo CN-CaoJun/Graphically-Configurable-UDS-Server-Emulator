@@ -6,25 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>475</width>
-    <height>439</height>
+    <width>492</width>
+    <height>453</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTabWidget" name="UDS_Server">
+   <widget class="QTabWidget" name="transport_abstract">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>451</width>
+      <width>471</width>
       <height>71</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="DoIP">
      <attribute name="title">
@@ -59,7 +59,7 @@
         <x>230</x>
         <y>10</y>
         <width>51</width>
-        <height>21</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="text">
@@ -85,7 +85,7 @@
         <x>360</x>
         <y>10</y>
         <width>51</width>
-        <height>21</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="text">
@@ -126,7 +126,7 @@
         <x>210</x>
         <y>10</y>
         <width>51</width>
-        <height>21</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="text">
@@ -165,7 +165,7 @@
         <x>338</x>
         <y>10</y>
         <width>51</width>
-        <height>21</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="text">
@@ -174,68 +174,87 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QTextBrowser" name="textBrowser">
+   <widget class="QTextBrowser" name="tracebox">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>141</y>
-      <width>451</width>
-      <height>251</height>
+      <y>140</y>
+      <width>471</width>
+      <height>261</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="init_server">
-    <property name="geometry">
-     <rect>
-      <x>364</x>
-      <y>100</y>
-      <width>91</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Init Server</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="config_file">
+   <widget class="QFrame" name="uds_init">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>100</y>
-      <width>71</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Config File</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="config_file_label">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>100</y>
-      <width>271</width>
-      <height>25</height>
+      <y>90</y>
+      <width>471</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Shape::Box</enum>
+     <enum>QFrame::Shape::StyledPanel</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Shadow::Sunken</enum>
+     <enum>QFrame::Shadow::Raised</enum>
     </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
+    <widget class="QPushButton" name="config_file">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Config File</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="config_file_label">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>10</y>
+       <width>271</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Sunken</enum>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="init_server">
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>10</y>
+       <width>91</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Init Server</string>
+     </property>
+    </widget>
    </widget>
+   <zorder>uds_init</zorder>
+   <zorder>transport_abstract</zorder>
+   <zorder>tracebox</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>475</width>
+     <width>492</width>
      <height>22</height>
     </rect>
    </property>
