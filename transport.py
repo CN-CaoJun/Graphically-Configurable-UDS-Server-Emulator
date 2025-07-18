@@ -252,17 +252,19 @@ class TransportManager(QObject):
                 responsefile=self.transport_info['config_file_path']
             )
             
-            # Connect server signals if available
-            if hasattr(self.current_transport, 'log_message'):
-                self.current_transport.log_message.connect(self.log_message.emit)
-                
+            self.current_transport.log_message.connect(self.log_message.emit)
+            self.current_transport.client_connected.connect(
+                lambda addr: self.log_message.emit(f"Client connected: {addr}")
+            )
+            self.current_transport.client_disconnected.connect(
+                lambda addr: self.log_message.emit(f"Client disconnected: {addr}")
+            )
+            self.current_transport.status_changed.connect(
+                lambda status: self.log_message.emit(f"DoIP Server status: {status}")
+            )
             # Start the server
-            if hasattr(self.current_transport, 'start_server'):
-                self.current_transport.start_server()
-                self.log_message.emit("DoIP Server initialized and started successfully")
-            else:
-                self.log_message.emit("DoIP Server initialized (start method not available)")
-                
+            self.current_transport.start_server()
+            self.log_message.emit("DoIP Server initialized and started successfully")
             # Emit transport ready signal
             self.transport_ready.emit(self.current_transport)
             
