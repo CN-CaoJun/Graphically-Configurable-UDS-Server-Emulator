@@ -27,6 +27,8 @@ class TransportManager(QObject):
         """Create empty transport information structure"""
         return {
             'transport_type': None,  # 'CAN' or 'ETH'
+            'config_file_path': None,  # Path to configuration file
+            'config_data': None,       # Loaded configuration data
             'can_info': {
                 'device_type': None,     # CAN device type (e.g., 'socketcan', 'pcan', 'kvaser')
                 'channel': None,         # CAN channel (e.g., 'can0', 'PCAN_USBBUS1')
@@ -107,8 +109,256 @@ class TransportManager(QObject):
         self.ui.CAN_Server_Addr.textChanged.connect(self.on_can_addr_changed)
         self.ui.CAN_CLient_Addr.textChanged.connect(self.on_can_addr_changed)
         
+        # Connect config file selection button
+        self.ui.config_file.clicked.connect(self.select_config_file)
+        
+        # Connect server initialization button
+        self.ui.init_server.clicked.connect(self.init_server)
+        
         # Monitor CAN-FD checkbox
         self.ui.is_FD.toggled.connect(self.on_can_fd_changed)
+        
+    def select_config_file(self) -> None:
+        """Handle config file selection"""
+        try:
+            # Open file dialog to select configuration file
+            file_path, _ = QFileDialog.getOpenFileName(
+                None,
+                "Select Configuration File",
+                "",
+                "JSON Files (*.json);;All Files (*.*)"
+            )
+            
+            if file_path:
+                # Display selected file path in label
+                self.ui.config_file_label.setText(file_path)
+                self.log_message.emit(f"Configuration file selected: {file_path}")
+                
+                # Store config file path in transport_info
+                self.transport_info['config_file_path'] = file_path
+                
+            else:
+                self.log_message.emit("No configuration file selected")
+                
+        except Exception as e:
+            self.log_message.emit(f"Error selecting configuration file: {str(e)}")
+            
+    def load_config_file(self, file_path: str) -> None:
+        """Load and validate configuration file"""
+        try:
+
+            
+            self.log_message.emit("Configuration file loaded successfully")
+            
+        except json.JSONDecodeError as e:
+            self.log_message.emit(f"Invalid JSON format in config file: {str(e)}")
+        except FileNotFoundError:
+            self.log_message.emit(f"Configuration file not found: {file_path}")
+        except Exception as e:
+            self.log_message.emit(f"Error loading configuration file: {str(e)}")
+            
+    def init_server(self) -> None:
+        """Initialize DoIP or DoCAN server based on transport_info"""
+        try:
+            # Check if transport_info is complete
+            if not self.validate_transport_info():
+                self.log_message.emit("Transport information is incomplete. Please configure all settings.")
+                return
+                
+            self.log_message.emit("=== Initializing Server ===")
+            self.log_message.emit(f"Transport Type: {self.transport_info.get('transport_type', 'Unknown')}")
+            
+            # Initialize server based on transport type
+            if self.transport_info['transport_type'] == 'ETH':
+                self.init_doip_server()
+            elif self.transport_info['transport_type'] == 'CAN':
+                self.init_docan_server()
+            else:
+                self.log_message.emit("Unknown transport type. Please select DoIP or DoCAN tab.")
+                
+        except Exception as e:
+            self.log_message.emit(f"Error initializing server: {str(e)}")
+            
+    def validate_transport_info(self) -> bool:
+        """Validate if transport_info contains all required information"""
+        transport_type = self.transport_info.get('transport_type')
+        
+        if not transport_type:
+            self.log_message.emit("No transport type selected")
+            return False
+            
+        if 'config_file_path' not in self.transport_info:
+            self.log_message.emit("No configuration file selected")
+            return False
+            
+        if transport_type == 'ETH':
+            eth_info = self.transport_info.get('eth_info', {})
+            required_fields = ['ip_address', 'client_addr', 'server_addr']
+            for field in required_fields:
+                if not eth_info.get(field):
+                    self.log_message.emit(f"Missing ETH configuration: {field}")
+                    return False
+                    
+        elif transport_type == 'CAN':
+            can_info = self.transport_info.get('can_info', {})
+            required_fields = ['channel', 'client_addr', 'server_addr']
+            for field in required_fields:
+                if not can_info.get(field):
+                    self.log_message.emit(f"Missing CAN configuration: {field}")
+                    return False
+                    
+        return True
+        
+    def init_doip_server(self) -> None:
+        """Initialize DoIP server with transport_info"""
+        try:
+            self.log_message.emit("Initializing DoIP Server...")
+            
+            # Import DoIP server module
+            from doip_server import DoIPServer
+            
+            # Extract ETH info parameters
+            eth_info = self.transport_info.get('eth_info', {})
+            
+            # Get individual parameters with default values
+            host = eth_info.get('ip_address', '127.0.0.1')
+            port = eth_info.get('port', 13400)
+            client_addr = eth_info.get('client_addr', '0x0E80')
+            server_addr = eth_info.get('server_addr', '0x0040')
+            interface_name = eth_info.get('interface_name', 'Unknown')
+            
+            # Convert hex string addresses to integers if needed
+            if isinstance(client_addr, str) and client_addr.startswith('0x'):
+                client_addr = int(client_addr, 16)
+            if isinstance(server_addr, str) and server_addr.startswith('0x'):
+                server_addr = int(server_addr, 16)
+                
+            # Log the parameters being used
+            self.log_message.emit(f"DoIP Server Parameters:")
+            self.log_message.emit(f"  Host IP: {host}")
+            self.log_message.emit(f"  Port: {port}")
+            self.log_message.emit(f"  Interface: {interface_name}")
+            self.log_message.emit(f"  Client Address: {client_addr} (0x{client_addr:04X})")
+            self.log_message.emit(f"  Server Address: {server_addr} (0x{server_addr:04X})")
+            self.log_message.emit(f"  Response file path: {self.transport_info['config_file_path']}")
+            
+            # Create DoIP server instance with extracted parameters
+            self.current_transport = DoIPServer(
+                host=host,
+                port=port,
+                client_addr=client_addr,
+                server_addr_func=0x7DF,  # Functional address for UDS
+                server_addr=server_addr,
+                responsefile=self.transport_info['config_file_path']
+            )
+            
+            # Connect server signals if available
+            if hasattr(self.current_transport, 'log_message'):
+                self.current_transport.log_message.connect(self.log_message.emit)
+                
+            # Start the server
+            if hasattr(self.current_transport, 'start_server'):
+                self.current_transport.start_server()
+                self.log_message.emit("DoIP Server initialized and started successfully")
+            else:
+                self.log_message.emit("DoIP Server initialized (start method not available)")
+                
+            # Emit transport ready signal
+            self.transport_ready.emit(self.current_transport)
+            
+        except ImportError:
+            self.log_message.emit("DoIP server module not found. Please ensure doip_server.py exists.")
+        except ValueError as e:
+            self.log_message.emit(f"Invalid address format: {str(e)}")
+        except Exception as e:
+            self.log_message.emit(f"Error initializing DoIP server: {str(e)}")
+            
+    def init_docan_server(self) -> None:
+        """Initialize DoCAN server with transport_info"""
+        try:
+            self.log_message.emit("Initializing DoCAN Server...")
+            
+            # Import DoCAN server module
+            from docan_server import DoCANServer
+            
+            # Extract CAN info parameters
+            can_info = self.transport_info.get('can_info', {})
+            
+            # Get individual parameters with default values
+            device_type = can_info.get('device_type', 'socketcan')
+            channel = can_info.get('channel', 'can0')
+            client_addr = can_info.get('client_addr', '0x0E80')
+            server_addr = can_info.get('server_addr', '0x0040')
+            is_fd = can_info.get('is_fd', False)
+            bitrate = can_info.get('bitrate', 500000)
+            
+            # Convert hex string addresses to integers if needed
+            if isinstance(client_addr, str) and client_addr.startswith('0x'):
+                client_addr = int(client_addr, 16)
+            if isinstance(server_addr, str) and server_addr.startswith('0x'):
+                server_addr = int(server_addr, 16)
+                
+            # Log the parameters being used
+            self.log_message.emit(f"DoCAN Server Parameters:")
+            self.log_message.emit(f"  Device Type: {device_type}")
+            self.log_message.emit(f"  Channel: {channel}")
+            self.log_message.emit(f"  Client Address: {client_addr} (0x{client_addr:03X})")
+            self.log_message.emit(f"  Server Address: {server_addr} (0x{server_addr:03X})")
+            self.log_message.emit(f"  CAN-FD: {is_fd}")
+            self.log_message.emit(f"  Bitrate: {bitrate}")
+            
+            # Create DoCAN server instance with extracted parameters
+            self.current_transport = DoCANServer(
+                device_type=device_type,
+                channel=channel,
+                client_addr=client_addr,
+                server_addr=server_addr,
+                is_fd=is_fd,
+                bitrate=bitrate
+            )
+            
+            # Connect server signals if available
+            if hasattr(self.current_transport, 'log_message'):
+                self.current_transport.log_message.connect(self.log_message.emit)
+                
+            # Start the server
+            if hasattr(self.current_transport, 'start'):
+                self.current_transport.start()
+                self.log_message.emit("DoCAN Server initialized and started successfully")
+            else:
+                self.log_message.emit("DoCAN Server initialized (start method not available)")
+                
+            # Emit transport ready signal
+            self.transport_ready.emit(self.current_transport)
+            
+        except ImportError:
+            self.log_message.emit("DoCAN server module not found. Please ensure docan_server.py exists.")
+        except ValueError as e:
+            self.log_message.emit(f"Invalid address format: {str(e)}")
+        except Exception as e:
+            self.log_message.emit(f"Error initializing DoCAN server: {str(e)}")
+    def create_empty_transport_info(self) -> Dict[str, Any]:
+        """Create empty transport information structure"""
+        return {
+            'transport_type': None,  # 'CAN' or 'ETH'
+            'config_file_path': None,  # Path to configuration file
+            'config_data': None,       # Loaded configuration data
+            'can_info': {
+                'device_type': None,     # CAN device type (e.g., 'socketcan', 'pcan', 'kvaser')
+                'channel': None,         # CAN channel (e.g., 'can0', 'PCAN_USBBUS1')
+                'client_addr': None,     # Client CAN ID
+                'server_addr': None,     # Server CAN ID
+                'is_fd': False,          # CAN-FD support flag
+                'bitrate': 500000        # CAN bitrate
+            },
+            'eth_info': {
+                'ip_address': None,      # Network interface IP address
+                'interface_name': None,  # Network interface name
+                'client_addr': None,     # Client logical address
+                'server_addr': None,     # Server logical address
+                'port': 13400           # DoIP port (default 13400)
+            }
+        }
         
     def on_net_select_changed(self, selected_text: str) -> None:
         """Handle network interface selection change"""
@@ -214,11 +464,10 @@ class TransportManager(QObject):
                 if netifaces.AF_INET in addrs:
                     for addr_info in addrs[netifaces.AF_INET]:
                         ip = addr_info.get('addr')
-                        if ip and ip != '127.0.0.1':  # Exclude loopback
-                            interface_info = f"{interface} ({ip})"
-                            valid_interfaces.append(interface_info)
-                            self.ui.Net_Select.addItem(interface_info)
-                            self.log_message.emit(f"Found network interface: {interface_info}")
+                        interface_info = f"{interface} ({ip})"
+                        valid_interfaces.append(interface_info)
+                        self.ui.Net_Select.addItem(interface_info)
+                        self.log_message.emit(f"Found network interface: {interface_info}")
             
             if not valid_interfaces:
                 self.log_message.emit("No available network interfaces found")
