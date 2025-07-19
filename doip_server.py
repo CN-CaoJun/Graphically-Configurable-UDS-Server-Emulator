@@ -391,7 +391,7 @@ class DoIPServer(QObject):
             if service_id == 0x3E: 
                 self.log_message.emit("TesterPresent with functional addressing - no response")
                 return None
-            elif service_id == 0x11:  # ECU Reset - 功能寻址时可能有特殊处理
+            elif service_id == 0x11: 
                 self.log_message.emit("ECU Reset with functional addressing")
                
         elif address_type == "physical":
@@ -404,19 +404,19 @@ class DoIPServer(QObject):
         elif service_id == 0x22:  # ReadDataByIdentifier
             if len(request_data) >= 3:
                 did = struct.unpack('>H', request_data[1:3])[0]
-                return bytes([0x62]) + request_data[1:3] + b'\x01\x02\x03\x04'  # 示例数据
+                return bytes([0x62]) + request_data[1:3] + b'\x01\x02\x03\x04' 
         elif service_id == 0x27:  # SecurityAccess
             if len(request_data) >= 2:
                 level = request_data[1]
-                if level % 2 == 1:  # 请求种子
+                if level % 2 == 1:  
                     return bytes([0x67, level]) + b'\x12\x34\x56\x78\x9A\xBC\xDE\xF0' * 2
-                else:  # 发送密钥
+                else: 
                     return bytes([0x67, level])
         elif service_id == 0x3E:  # TesterPresent
             if address_type == "physical":
                 return bytes([0x7E])  # 物理寻址时响应
             else:
-                return None  # 功能寻址时不响应
+                return None 
         elif service_id == 0x11:  # ECU Reset
             if len(request_data) >= 2:
                 reset_type = request_data[1]
@@ -446,7 +446,7 @@ class DoIPServer(QObject):
             response = bytes([0x71, 0x01, 0xFF, 0x00, 0x00])
             return response
         
-        return bytes([0x7F, service_id, 0x11])  # serviceNotSupported
+        return bytes([0x7F, service_id, 0x11]) 
     
     def send_doip_message(self, client_socket: socket.socket, payload_type: int, payload_data: bytes):
         header = struct.pack('>BBHI', 
