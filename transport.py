@@ -175,7 +175,7 @@ class TransportManager(QObject):
                 self.init_docan_server()
             else:
                 self.log_message.emit("Unknown transport type. Please select DoIP or DoCAN tab.")
-                
+  
         except Exception as e:
             self.log_message.emit(f"Error initializing server: {str(e)}")
             

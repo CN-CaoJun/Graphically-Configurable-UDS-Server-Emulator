@@ -6,26 +6,23 @@ A graphically configurable UDS (Unified Diagnostic Services) server emulator des
 
 - **DoCAN Support**: UDS server simulation over CAN bus
 - **DoIP Support**: UDS server simulation over Ethernet
-- **DoLIN Support**: UDS server simulation over LIN bus (planned)
 - **Graphical Configuration**: Intuitive configuration interface
 - **Multi-Protocol Support**: Simultaneous support for multiple transport protocols
 
 ## Supported Transport Protocols
 
-### DoCAN (Diagnostics over CAN)
+### DoCAN (Diagnostics over CAN) -- Under Developing
+
 - UDS communication over CAN bus
 - Dependencies:
   - `python-can`: CAN bus communication library
   - `python-canisotp`: CAN ISO-TP protocol implementation
 
-### DoIP (Diagnostics over Internet Protocol)
+### DoIP (Diagnostics over Internet Protocol) -- Done
+
 - UDS communication over Ethernet
 - Implemented using standard Socket communication
 - Supports TCP/UDP transport
-
-### DoLIN (Diagnostics over LIN)
-- UDS communication over LIN bus
-- Status: Under development
 
 ### GUI Framework
 - Built with PySide6 (Qt for Python)
@@ -37,20 +34,12 @@ A graphically configurable UDS (Unified Diagnostic Services) server emulator des
   - Interactive parameter adjustment
   - Customizable layout and themes
 
-## Installation
-
-Install the required dependencies:
-
-```bash
-pip install python-can python-canisotp
-```
-
 ## Usage
 
 Run the main emulator:
 
 ```bash
-python Emulator_main.py
+python main.py
 ```
 
-## Project Structure
+![image-20250719234407565](./${pics}/image-20250719234407565.png) 

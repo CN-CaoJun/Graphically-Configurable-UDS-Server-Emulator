@@ -88,15 +88,12 @@ class DoIPServer(QObject):
             self.log_message.emit("TCP and UDP sockets are listening...")
             self.status_changed.emit("running")
             
-            # 发送车辆公告
-            self.send_udp_vehicle_announcements()
+            # self.send_udp_vehicle_announcements()
             
-            # 启动UDP处理线程
             udp_thread = threading.Thread(target=self.handle_udp_messages)
             udp_thread.daemon = True
             udp_thread.start()
             
-            # 启动TCP监听线程（非阻塞）
             tcp_thread = threading.Thread(target=self.tcp_accept_loop)
             tcp_thread.daemon = True
             tcp_thread.start()
@@ -117,7 +114,6 @@ class DoIPServer(QObject):
                 self.log_message.emit(f"New TCP connection from {client_address}")
                 self.client_connected.emit(f"{client_address[0]}:{client_address[1]}")
                 
-                # 为每个TCP客户端创建处理线程
                 client_thread = threading.Thread(
                     target=self.handle_tcp_client,
                     args=(client_socket, client_address)
@@ -133,13 +129,10 @@ class DoIPServer(QObject):
         self.log_message.emit("TCP accept loop stopped")
         
     def handle_udp_messages(self):
-        """处理UDP消息"""
         self.log_message.emit("UDP message handler started")
 
-        
         while self.running:
             try:
-                # 接收UDP数据
                 data, client_address = self.udp_socket.recvfrom(4096)
                 self.log_message.emit(f"Received UDP message from {client_address}, length: {len(data)}")
                 
@@ -436,16 +429,16 @@ class DoIPServer(QObject):
             return response
         
         if len(request_data) > 0 and request_data[0] == 0x34 and len(request_data) > 1:
-            response = bytes([0x74,0x40,0x00,0x00,0x3F,0x02])  # 正响应：76 + 块序列号
+            response = bytes([0x74,0x40,0x00,0x00,0x3F,0x02]) 
             return response
         
         
         if len(request_data) > 0 and request_data[0] == 0x36 and len(request_data) > 1:
-            response = bytes([0x76, request_data[1]])  # 正响应：76 + 块序列号
+            response = bytes([0x76, request_data[1]]) 
             return response
         
         if len(request_data) > 0 and request_data[0] == 0x37:
-            response = bytes([0x77])  # 正响应：77
+            response = bytes([0x77])  
             return response
         
         if (request_data[0] == 0x31 and 

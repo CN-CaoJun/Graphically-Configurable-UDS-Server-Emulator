@@ -24,7 +24,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(492, 453)
+        MainWindow.resize(492, 645)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.transport_abstract = QTabWidget(self.centralwidget)
@@ -71,7 +71,7 @@ class Ui_MainWindow(object):
         self.transport_abstract.addTab(self.DoCAN, "")
         self.tracebox = QTextBrowser(self.centralwidget)
         self.tracebox.setObjectName(u"tracebox")
-        self.tracebox.setGeometry(QRect(10, 140, 471, 261))
+        self.tracebox.setGeometry(QRect(10, 140, 471, 471))
         self.uds_init = QFrame(self.centralwidget)
         self.uds_init.setObjectName(u"uds_init")
         self.uds_init.setGeometry(QRect(10, 90, 471, 41))
